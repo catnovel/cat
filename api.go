@@ -14,6 +14,16 @@ func (cat *Ciweimao) CatalogByBookIDApi(bookID string) gjson.Result {
 	return cat.post("/chapter/get_updated_chapter_by_division_new", map[string]string{"book_id": bookID})
 }
 
+func (cat *Ciweimao) NewCatalogByBookIDApi(bookID string) []gjson.Result {
+	var chapterListArray []gjson.Result
+	for _, division := range cat.CatalogByBookIDApi(bookID).Get("data.chapter_list").Array() {
+		for _, chapter := range division.Get("chapter_list").Array() {
+			chapterListArray = append(chapterListArray, chapter)
+		}
+	}
+	return chapterListArray
+}
+
 func (cat *Ciweimao) BookInfoApi(bookId string) gjson.Result {
 	return cat.post("/book/get_info_by_id", map[string]string{"book_id": bookId})
 }
