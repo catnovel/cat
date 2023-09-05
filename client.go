@@ -43,7 +43,7 @@ func (cat *Ciweimao) post(url string, data map[string]string) gjson.Result {
 	}else {
 		data = cat.params
 	}
-	response := buildHttps.Get(cat.host+url, cat.params, map[string]string{
+	response := buildHttps.Get(cat.host+url, data, map[string]string{
 		"Content-Type": "application/x-www-form-urlencoded",
 		"User-Agent":   "Android com.kuangxiangciweimao.novel " + cat.version,
 	}).HttpClient()
