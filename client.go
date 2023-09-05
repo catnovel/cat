@@ -37,9 +37,11 @@ func (cat *Ciweimao)NewCiweimaoParams(account, token string){
 
 func (cat *Ciweimao) post(url string, data map[string]string) gjson.Result {
 	if data != nil {
-		for k, v := range data {
-			cat.params[k] = v
+		for k, v := range cat.params {
+			data[k] = v
 		}
+	}else {
+		data = cat.params
 	}
 	response := buildHttps.Get(cat.host+url, cat.params, map[string]string{
 		"Content-Type": "application/x-www-form-urlencoded",
