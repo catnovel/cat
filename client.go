@@ -29,6 +29,12 @@ func InitCiweimaoClient(account, token string) *Ciweimao {
 		},
 	}
 }
+
+func (cat *Ciweimao)NewCiweimaoParams(account, token string){
+	cat.params["account"] = account
+	cat.params["login_token"] = token
+}
+
 func (cat *Ciweimao) post(url string, data map[string]string) gjson.Result {
 	if data != nil {
 		for k, v := range data {
