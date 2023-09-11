@@ -1,73 +1,84 @@
 package cat
 
 import (
-	"github.com/ciyjbo/buildHttps"
+	"github.com/catnovelapi/BuilderHttpClient"
 	"github.com/tidwall/gjson"
 	"log"
 )
 
 type Ciweimao struct {
-	params    map[string]string
-	host      string
-	version   string
-	decodeKey string
+	debug       bool
+	maxRetry    int
+	host        string
+	version     string
+	loginToken  string
+	account     string
+	deviceToken string
+	decodeKey   string
+	headers     map[string]any
 }
 
-func InitCiweimaoClient(account, token string) *Ciweimao {
-	if len(token) != 32 {
-		log.Fatal("token格式错误")
+func NewCiweimaoClient(options ...CiweimaoOption) *Ciweimao {
+	client := &Ciweimao{
+		maxRetry:    3,
+		host:        "https://app.hbooker.com",
+		version:     "2.9.290",
+		decodeKey:   "zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn",
+		deviceToken: "ciweimao_",
 	}
-	return &Ciweimao{
-		host:      "https://app.hbooker.com",
-		version:   "2.9.290",
-		decodeKey: "zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn",
-		params: map[string]string{
-			"device_token": "ciweimao_",
-			"app_version":  "2.9.290",
-			"login_token":  token,
-			"account":      account,
-		},
+	for _, option := range options {
+		option.apply(client)
 	}
-}
 
-func (cat *Ciweimao)NewCiweimaoParams(account, token string){
-	cat.params["account"] = account
-	cat.params["login_token"] = token
-}
-
-func (cat *Ciweimao) post(url string, data map[string]string) gjson.Result {
-	if data != nil {
-		for k, v := range cat.params {
-			data[k] = v
-		}
-	}else {
-		data = cat.params
-	}
-	response := buildHttps.Get(cat.host+url, data, map[string]string{
+	client.headers = map[string]any{
 		"Content-Type": "application/x-www-form-urlencoded",
-		"User-Agent":   "Android com.kuangxiangciweimao.novel " + cat.version,
-	}).HttpClient()
-	for i := 0; i < 5; i++ {
-		decodeText := DecodeText(response.String(), cat.decodeKey)
-		if result := gjson.Parse(decodeText); result.Exists() {
-			return result
-		}
+		"User-Agent":   "Android com.kuangxiangciweimao.novel " + client.version,
 	}
-	return gjson.Result{}
+
+	return client
 }
 
-func (cat *Ciweimao) noDecodePost(url string, data map[string]string) gjson.Result {
+func (cat *Ciweimao) setParams(data map[string]string) map[string]string {
+	params := map[string]string{
+		"device_token": cat.deviceToken,
+		"app_version":  cat.version,
+		"login_token":  cat.loginToken,
+		"account":      cat.account,
+	}
 	if data != nil {
 		for k, v := range data {
-			cat.params[k] = v
+			params[k] = v
 		}
 	}
-	response := buildHttps.Get(cat.host+url, cat.params, map[string]string{
-		"Content-Type": "application/x-www-form-urlencoded",
-		"User-Agent":   "Android com.kuangxiangciweimao.novel " + cat.version,
-	}).HttpClient()
-	for i := 0; i < 5; i++ {
-		if result := gjson.Parse(response.String()); result.Exists() {
+	return params
+
+}
+func (cat *Ciweimao) NewAuthentication(loginToken, account string) {
+	if len(loginToken) != 32 {
+		log.Printf("loginToken长度不正确,必须为32位,当前变量:%s", loginToken)
+		return
+	}
+	cat.loginToken = loginToken
+	cat.account = account
+
+}
+func (cat *Ciweimao) post(url string, data map[string]string, options ...CiweimaoOption) gjson.Result {
+	for _, option := range options {
+		option.apply(cat)
+	}
+	builder := []BuilderHttpClient.Option{BuilderHttpClient.Body(cat.setParams(data)), BuilderHttpClient.Header(cat.headers)}
+	if cat.debug {
+		builder = append(builder, BuilderHttpClient.Debug())
+	}
+	response := BuilderHttpClient.Post(cat.host+url, builder...)
+	for i := 0; i < cat.maxRetry; i++ {
+		var resultText string
+		if cat.decodeKey == "" {
+			resultText = response.Text()
+		} else {
+			resultText = DecodeText(response.Text(), cat.decodeKey)
+		}
+		if result := gjson.Parse(resultText); result.Exists() {
 			return result
 		}
 	}

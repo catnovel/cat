@@ -53,12 +53,11 @@ func (cat *Ciweimao) ChapterInfoApi(chapterId string, command string) string {
 }
 
 func (cat *Ciweimao) useGeetestApi(loginName string) bool {
-	response := cat.noDecodePost("/signup/use_geetest", map[string]string{"login_name": loginName})
+	response := cat.post("/signup/use_geetest", map[string]string{"login_name": loginName}, NoDecode())
 	if response.Get("data.need_use_geetest").String() == "0" {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func (cat *Ciweimao) BookShelfIdListApi() gjson.Result {
