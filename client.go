@@ -38,8 +38,8 @@ func NewCiweimaoClient(options ...CiweimaoOption) *Ciweimao {
 	return client
 }
 
-func (cat *Ciweimao) setParams(data map[string]string) map[string]string {
-	params := map[string]string{
+func (cat *Ciweimao) setParams(data map[string]any) map[string]any {
+	params := map[string]any{
 		"device_token": cat.deviceToken,
 		"app_version":  cat.version,
 		"login_token":  cat.loginToken,
@@ -62,16 +62,17 @@ func (cat *Ciweimao) NewAuthentication(loginToken, account string) {
 	cat.account = account
 
 }
-func (cat *Ciweimao) post(url string, data map[string]string, options ...CiweimaoOption) gjson.Result {
+func (cat *Ciweimao) post(url string, data map[string]any, options ...CiweimaoOption) gjson.Result {
 	for _, option := range options {
 		option.apply(cat)
 	}
-	builder := []BuilderHttpClient.Option{BuilderHttpClient.Body(cat.setParams(data)), BuilderHttpClient.Header(cat.headers)}
-	if cat.debug {
-		builder = append(builder, BuilderHttpClient.Debug())
-	}
-	response := BuilderHttpClient.Post(cat.host+url, builder...)
 	for i := 0; i < cat.maxRetry; i++ {
+
+		response := BuilderHttpClient.Post(cat.host+url, BuilderHttpClient.Body(cat.setParams(data)), BuilderHttpClient.Header(cat.headers))
+
+		if cat.debug {
+			response = response.Debug()
+		}
 		var resultText string
 		if cat.decodeKey == "" {
 			resultText = response.Text()
