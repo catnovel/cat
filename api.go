@@ -25,10 +25,6 @@ func (cat *Ciweimao) SearchByKeywordApi(keyword string, page, categoryIndex int)
 	return cat.post(searchBookApiPoint, map[string]any{"count": "10", "page": page, "category_index": categoryIndex, "key": keyword})
 }
 
-func (cat *Ciweimao) NewSearchByKeywordApi(keyword string, page int) []gjson.Result {
-	return cat.SearchByKeywordApi(keyword, page, 0).Get("data.book_list").Array()
-}
-
 func (cat *Ciweimao) SignupApi(account, password string) gjson.Result {
 	return cat.post(loginApiPoint, map[string]any{"login_name": account, "passwd": password})
 }
@@ -41,7 +37,7 @@ func (cat *Ciweimao) ChapterInfoApi(chapterId string, command string) gjson.Resu
 	return cat.post(chapterInfoApiPoint, map[string]any{"chapter_id": chapterId, "chapter_command": command})
 }
 
-func (cat *Ciweimao) AutoRegV2() gjson.Result {
+func (cat *Ciweimao) AutoRegV2Api() gjson.Result {
 	return cat.post(autoRegV2ApiPoint, map[string]any{"gender": "1", "channel": "oppo", "uuid": "android " + uuid.New().String()})
 }
 
