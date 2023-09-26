@@ -1,5 +1,35 @@
 package cat
 
+type HttpClient struct {
+	debug     bool
+	maxRetry  int
+	decodeKey string
+}
+
+type HttpOption interface {
+	apply(*HttpClient)
+}
+type HttpOptionFunc func(*HttpClient)
+
+func (optionFunc HttpOptionFunc) apply(c *HttpClient) {
+	optionFunc(c)
+}
+func Debug() HttpOption {
+	return HttpOptionFunc(func(c *HttpClient) {
+		c.debug = true
+	})
+}
+func NoDecode() HttpOption {
+	return HttpOptionFunc(func(c *HttpClient) {
+		c.decodeKey = ""
+	})
+}
+func MaxRetry(retry int) HttpOption {
+	return HttpOptionFunc(func(c *HttpClient) {
+		c.maxRetry = retry
+	})
+}
+
 type CiweimaoOption interface {
 	apply(*Ciweimao)
 }
@@ -9,21 +39,6 @@ func (optionFunc CiweimaoOptionFunc) apply(c *Ciweimao) {
 	optionFunc(c)
 }
 
-func Debug() CiweimaoOption {
-	return CiweimaoOptionFunc(func(c *Ciweimao) {
-		c.debug = true
-	})
-}
-func NoDecode() CiweimaoOption {
-	return CiweimaoOptionFunc(func(c *Ciweimao) {
-		c.decodeKey = ""
-	})
-}
-func MaxRetry(retry int) CiweimaoOption {
-	return CiweimaoOptionFunc(func(c *Ciweimao) {
-		c.maxRetry = retry
-	})
-}
 func ApiBase(host string) CiweimaoOption {
 	return CiweimaoOptionFunc(func(c *Ciweimao) {
 		c.host = host

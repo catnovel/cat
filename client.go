@@ -12,8 +12,6 @@ import (
 )
 
 type Ciweimao struct {
-	debug       bool
-	maxRetry    int
 	host        string
 	version     string
 	loginToken  string
@@ -30,7 +28,6 @@ type CiweimaoApp struct {
 
 func NewCiweimaoClient(options ...CiweimaoOption) *Ciweimao {
 	client := &Ciweimao{
-		maxRetry:    3,
 		host:        "https://app.hbooker.com",
 		version:     "2.9.290",
 		decodeKey:   "zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn",
@@ -74,16 +71,17 @@ func (cat *Ciweimao) NewAuthentication(loginToken, account string) {
 	}
 }
 
-func (cat *Ciweimao) post(url string, data map[string]any, options ...CiweimaoOption) gjson.Result {
+func (cat *Ciweimao) post(url string, data map[string]any, options ...HttpOption) gjson.Result {
+	httpBuilder := &HttpClient{maxRetry: 3, debug: false, decodeKey: cat.decodeKey}
 	for _, option := range options {
-		option.apply(cat)
+		option.apply(httpBuilder)
 	}
-	for i := 0; i < cat.maxRetry; i++ {
+	for i := 0; i < httpBuilder.maxRetry; i++ {
 		response := BuilderHttpClient.Post(cat.host+url, BuilderHttpClient.Body(cat.setParams(data)), BuilderHttpClient.Header(cat.headers))
-		if cat.debug {
+		if httpBuilder.debug {
 			response = response.Debug()
 		}
-		resultText, err := cat.DecodeEncryptText(response.Text(), cat.decodeKey)
+		resultText, err := cat.DecodeEncryptText(response.Text(), httpBuilder.decodeKey)
 		if err == nil {
 			return gjson.Parse(resultText)
 		} else {
