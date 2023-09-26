@@ -3,7 +3,6 @@ package cat
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/catnovelapi/cat/cattemplate"
 )
 
@@ -16,7 +15,6 @@ func (cat *CiweimaoApp) CatalogListApp(bookId string) ([]cattemplate.CatalogueIn
 	if len(result.Get("data.chapter_list").Array()) == 0 {
 		return nil, errors.New("书籍目录为空, bookId:" + bookId)
 	}
-	fmt.Println(result.Get("data.chapter_list"))
 	err := json.Unmarshal([]byte(result.Get("data.chapter_list").String()), &chapterListArray)
 	if err != nil {
 		return nil, errors.New("书籍目录解析失败:" + err.Error())
