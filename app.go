@@ -29,13 +29,14 @@ func (cat *CiweimaoApp) ChapterInfoApp(chapterId string) (string, error) {
 	if command.Get("code").String() != "100000" {
 		return "", errors.New("获取章节command失败,tips:" + command.Get("tip").String())
 	}
-	response := cat.api.ChapterInfoApi(chapterId, command.Get("data.command").String())
+	commandKey := command.Get("data.command").String()
+	response := cat.api.ChapterInfoApi(chapterId, commandKey)
 	if response.Get("code").String() != "100000" {
 		return "", errors.New("获取章节内容失败,tips:" + response.Get("tip").String())
 	}
-	txtContent := DecodeText(response.Get("data.chapter_info.txt_content").String(), command.Get("data.command").String())
-	if txtContent == "" {
-		return "", errors.New("章节内容为空")
+	txtContent, err := cat.api.DecodeEncryptText(response.Get("data.chapter_info.txt_content").String(), commandKey)
+	if err != nil {
+		return "", err
 	}
 	return txtContent, nil
 }

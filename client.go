@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"github.com/catnovelapi/BuilderHttpClient"
 	"github.com/tidwall/gjson"
 	"log"
@@ -34,7 +35,6 @@ func NewCiweimaoClient(options ...CiweimaoOption) *Ciweimao {
 		version:     "2.9.290",
 		decodeKey:   "zG2nSeEfSHfvTCHy5LCcqtBbQehKNLXn",
 		deviceToken: "ciweimao_",
-		//App:         &CiweimaoApp{},
 	}
 	for _, option := range options {
 		option.apply(client)
@@ -68,32 +68,28 @@ func (cat *Ciweimao) setParams(data map[string]any) map[string]any {
 func (cat *Ciweimao) NewAuthentication(loginToken, account string) {
 	if len(loginToken) != 32 {
 		log.Printf("loginToken长度不正确,必须为32位,当前变量:%s", loginToken)
-		return
+	} else {
+		LoginToken(loginToken).apply(cat)
+		Account(account).apply(cat)
 	}
-	cat.loginToken = loginToken
-	cat.account = account
-
 }
+
 func (cat *Ciweimao) post(url string, data map[string]any, options ...CiweimaoOption) gjson.Result {
 	for _, option := range options {
 		option.apply(cat)
 	}
 	for i := 0; i < cat.maxRetry; i++ {
-
 		response := BuilderHttpClient.Post(cat.host+url, BuilderHttpClient.Body(cat.setParams(data)), BuilderHttpClient.Header(cat.headers))
-
 		if cat.debug {
 			response = response.Debug()
 		}
-		var resultText string
-		if cat.decodeKey == "" {
-			resultText = response.Text()
+		resultText, err := cat.DecodeEncryptText(response.Text(), cat.decodeKey)
+		if err == nil {
+			return gjson.Parse(resultText)
 		} else {
-			resultText = DecodeText(response.Text(), cat.decodeKey)
+			log.Println("解密失败 ", err)
 		}
-		if result := gjson.Parse(resultText); result.Exists() {
-			return result
-		}
+
 	}
 	return gjson.Result{}
 }
@@ -106,23 +102,13 @@ func SHA256(data []byte) []byte {
 	return ret[:]
 }
 
-// Base64Decode Base64 解码
-func Base64Decode(encoded string) ([]byte, error) {
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, err
-	}
-	return decoded, nil
-}
-
 // LoadKey 读取解密密钥
 func LoadKey(EncryptKey string) []byte {
 	Key := SHA256([]byte(EncryptKey))
 	return Key[:32]
 }
 
-// AESDecrypt AES 解密
-func AESDecrypt(EncryptKey string, ciphertext []byte) ([]byte, error) {
+func aesDecrypt(EncryptKey string, ciphertext []byte) ([]byte, error) {
 	key := LoadKey(EncryptKey)
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -142,17 +128,20 @@ func PKCS7UnPadding(plainText []byte) []byte {
 	return plainText[:(length - unpadding)]
 }
 
-// DecodeText 入口函数
-func DecodeText(str string, encryptKey string) string {
-	var err error
-	var decoded, raw []byte
-	decoded, err = Base64Decode(str)
-	if err != nil {
-		return str
+func (cat *Ciweimao) DecodeEncryptText(str string, decodeKey string) (string, error) {
+	if decodeKey == "" {
+		return str, nil
 	}
-	raw, err = AESDecrypt(encryptKey, decoded)
+	decoded, err := base64.StdEncoding.DecodeString(str)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return string(raw)
+	raw, err := aesDecrypt(decodeKey, decoded)
+	if err != nil {
+		return "", err
+	}
+	if len(raw) == 0 {
+		return "", errors.New("解密内容为空,请检查解密内容内容是否正确")
+	}
+	return string(raw), nil
 }
