@@ -2,8 +2,8 @@ github.com/PuerkitoBio/goquery v1.8.1 h1:uQxhNlArOIdbrH1tr0UXwdVFgDcZDrZVdcpygAc
 github.com/PuerkitoBio/goquery v1.8.1/go.mod h1:Q8ICL1kNUJ2sXGoAhPGUdYDJvgQgHzJsnnd3H7Ho5jQ=
 github.com/andybalholm/cascadia v1.3.1 h1:nhxRkql1kdYCc8Snf7D5/D3spOX+dBgjA6u8x004T2c=
 github.com/andybalholm/cascadia v1.3.1/go.mod h1:R4bJ1UQfqADjvDa4P6HZHLh/3OxWWEqc0Sk8XGwHqvA=
-github.com/catnovelapi/BuilderHttpClient v1.3.0 h1:+MHbOU/glNjgZuXzJNX3EAg6gmDaUBzCTwUU9/Qplew=
-github.com/catnovelapi/BuilderHttpClient v1.3.0/go.mod h1:+9UqAdUABdUdsGxgJDJEuBdNdCrMJlQvIEdn/ASrjaU=
+github.com/catnovelapi/BuilderHttpClient v1.4.7 h1:aaFAHIZxCSxUVCNNS5F9utstFQ7zsLc3G9dF8Q+CGMA=
+github.com/catnovelapi/BuilderHttpClient v1.4.7/go.mod h1:+9UqAdUABdUdsGxgJDJEuBdNdCrMJlQvIEdn/ASrjaU=
 github.com/google/uuid v1.3.1 h1:KjJaJ9iWZ3jOFZIf1Lqf4laDRCasjl0BCmnEGxkdLb4=
 github.com/google/uuid v1.3.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/tidwall/gjson v1.17.0 h1:/Jocvlh98kcTfpN2+JzGQWQcqrPQwDrVEMApx/M5ZwM=

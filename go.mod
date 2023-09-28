@@ -3,7 +3,7 @@ module github.com/catnovelapi/cat
 go 1.19
 
 require (
-	github.com/catnovelapi/BuilderHttpClient v1.3.0
+	github.com/catnovelapi/BuilderHttpClient v1.4.7
 	github.com/google/uuid v1.3.1
 	github.com/tidwall/gjson v1.17.0
 )
