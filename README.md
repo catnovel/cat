@@ -1,3 +1,5 @@
+# The structure design of this project is not reasonable and will soon be deprecated.
+
 # Cat
 
 Cat is a Go package that provides a client for interacting with the Ciweimao API. Ciweimao is an online platform for
